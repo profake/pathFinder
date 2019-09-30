@@ -1,3 +1,6 @@
+from tkinter import *
+from tkinter import messagebox
+Tk().wm_withdraw()  # to hide the main window
 import pygame
 from PIL import Image
 import numpy
@@ -5,7 +8,6 @@ import sys
 import collections
 import colors
 import tkinter
-Tkinter().wm_withdraw() #to hide the main window
 
 pygame.init()
 
@@ -39,6 +41,12 @@ paintBrush_rect = pygame.Rect(310, 5, 40, 40)
 pygame.draw.rect(window, colors.BLACK, paintBrush_rect, 3)
 window.blit(paintBrush, paintBrush_rect)
 
+dirt_big = pygame.image.load("img/dirt.png")
+dirt = pygame.transform.smoothscale(dirt_big, (40, 30))
+dirt_rect = pygame.Rect(360, 5, 40, 40)
+pygame.draw.rect(window, colors.BLACK, dirt_rect, 3)
+window.blit(dirt, dirt_rect)
+
 next_text = font.render(" Next", True, colors.RED)
 next_rect = pygame.Rect(420, 10, 50, 25)
 pygame.draw.rect(window, colors.BLACK, next_rect, 3)
@@ -56,8 +64,8 @@ while(run):
         color = colors.RED
     if eraser_rect.collidepoint(pygame.mouse.get_pos()):
         color = colors.BLACK
-    #if vacuum_rect.collidepoint(pygame.mouse.get_pos()):
-        #color = (0, 255, 0)
+    if dirt_rect.collidepoint(pygame.mouse.get_pos()):
+        color = colors.BROWN
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -95,10 +103,6 @@ pixels = img.load()
 newWindow = pygame.display.set_mode((displayX, displayY))
 pygame.display.set_caption("Running Algorithm")
 
-width, height = displayX, displayY-100
-start = (0, 0)
-queue = collections.deque([[start]])
-
 pygame.draw.rect(window, colors.WHITE, (0, 0, displayX, 100))
 map_text = font.render("Running Algorithm", True, colors.RED)
 window.blit(vacuum_text, (5, 5))
@@ -119,6 +123,7 @@ vacuum = pygame.transform.smoothscale(vacuum_big, (50, 30))
 placingVacuumMode = True
 draw = False
 havePlacedVacuum = False
+start = (0, 0)
 
 while placingVacuumMode :
     pygame.display.update()
@@ -138,14 +143,21 @@ while placingVacuumMode :
             if havePlacedVacuum:
                 placingVacuumMode = False
             else:
+                tkinter.messagebox.showinfo('Warning', 'Please place a vacuum cleaner')
 
         if pos[1]>105:
             newWindow.blit(image, (0, 100))
             newWindow.blit(vacuum, (pos[0]-10, pos[1]-10))
+            start = pos[0], pos[1]-105
+            havePlacedVacuum = True
 
     clock.tick(60)
 
-while(run):
+width, height = displayX, displayY-100
+queue = collections.deque([[start]])
+print(start)
+
+while run:
 
     image = pygame.image.fromstring(img.tobytes(), img.size, img.mode)
     newWindow.blit(image, (0, 100))
@@ -160,9 +172,15 @@ while(run):
 
             #for x2, y2 in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
             for x2, y2 in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1), (x+1, y+1), (x-1, y-1), (x+1, y-1), (x-1, y+1)):
-                if 0 <= x2 < width and 0 <= y2 < height and pixels[x2, y2] == colors.BLACK:
-                    queue.append(path + [(x2, y2)])
-                    pixels[x2, y2] = colors.GREEN
+                if 0 <= x2 < width and 0 <= y2 < height:
+                    if pixels[x2, y2] == colors.BLACK:
+                        queue.append(path + [(x2, y2)])
+                        pixels[x2, y2] = colors.GREY
+                    elif pixels[x2, y2] == colors.BROWN:
+                        queue.append(path + [(x2, y2)])
+                        pixels[x2, y2] = colors.GREEN
+
+
 
     pygame.display.update()
     for event in pygame.event.get():
