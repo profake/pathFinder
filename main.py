@@ -3,7 +3,7 @@ from tkinter import messagebox
 Tk().wm_withdraw()  # to hide the main window
 import pygame
 from PIL import Image
-import numpy
+#import numpy
 import sys
 import collections
 import colors
@@ -23,11 +23,13 @@ pos = (0, 0)
 clock = pygame.time.Clock()
 draw = False
 #pygame.draw.rect(window, colors.BLACK, (0, 100, displayX, 100))
-pygame.draw.rect(window, colors.WHITE, (0, 0, displayX, 100))
+pygame.draw.rect(window, colors.ORANGE, (0, 0, displayX, 100))
+pygame.draw.rect(window, colors.PURPLE, (0, 0, displayX, 50))
 
-font = pygame.font.SysFont("Ubuntu", 18, bold=True)
-vacuum_text = font.render("Vacuum Cleaner", True, colors.RED)
-map_text = font.render("Map Draw", True, colors.RED)
+font = pygame.font.Font("fonts/theboldfont.ttf", 34) #Load font object.
+smallerFont = pygame.font.Font("fonts/theboldfont.ttf", 20) #Load font object.
+vacuum_text = font.render("Map Draw Mode", True, colors.WHITE)
+map_text = font.render("Map Draw", True, colors.WHITE)
 
 eraser_big = pygame.image.load("img/eraser.png")
 eraser = pygame.transform.smoothscale(eraser_big, (50, 30))
@@ -47,13 +49,13 @@ dirt_rect = pygame.Rect(360, 5, 40, 40)
 pygame.draw.rect(window, colors.BLACK, dirt_rect, 3)
 window.blit(dirt, dirt_rect)
 
-next_text = font.render(" Next", True, colors.RED)
-next_rect = pygame.Rect(420, 10, 50, 25)
+next_text = smallerFont.render(" Next", True, colors.WHITE)
+next_rect = pygame.Rect(420, 10, 52, 30)
 pygame.draw.rect(window, colors.BLACK, next_rect, 3)
-window.blit(next_text, next_rect)
+window.blit(next_text, (420, 15))
 
-window.blit(vacuum_text, (5, 5))
-window.blit(map_text, (15, 25))
+window.blit(vacuum_text, (5, 60))
+#window.blit(map_text, (15, 25))
 savedMode = False
 
 while(run):
@@ -103,15 +105,15 @@ pixels = img.load()
 newWindow = pygame.display.set_mode((displayX, displayY))
 pygame.display.set_caption("Running Algorithm")
 
-pygame.draw.rect(window, colors.WHITE, (0, 0, displayX, 100))
-map_text = font.render("Running Algorithm", True, colors.RED)
-window.blit(vacuum_text, (5, 5))
+pygame.draw.rect(window, colors.ORANGE, (0, 0, displayX, 100))
+map_text = font.render("Running Algorithm", True, colors.WHITE)
+#window.blit(vacuum_text, (5, 5))
 window.blit(map_text, (15, 25))
 
-start_text = font.render(" Start", True, colors.RED)
-start_rect = pygame.Rect(420, 50, 50, 25)
+start_text = smallerFont.render(" Start", True, colors.WHITE)
+start_rect = pygame.Rect(420, 50, 62, 25)
 pygame.draw.rect(window, colors.BLACK, start_rect, 3)
-window.blit(start_text, start_rect)
+window.blit(start_text, (420, 55))
 
 image = pygame.image.fromstring(img.tobytes(), img.size, img.mode)
 imageRect = image.get_rect()
@@ -179,8 +181,6 @@ while run:
                     elif pixels[x2, y2] == colors.BROWN:
                         queue.append(path + [(x2, y2)])
                         pixels[x2, y2] = colors.GREEN
-
-
 
     pygame.display.update()
     for event in pygame.event.get():
