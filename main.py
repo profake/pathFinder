@@ -8,6 +8,7 @@ import sys
 import collections
 import colors
 import tkinter
+import os
 
 pygame.init()
 
@@ -22,78 +23,94 @@ color = colors.BLACK
 pos = (0, 0)
 clock = pygame.time.Clock()
 draw = False
+neverDrew = True
+
 #pygame.draw.rect(window, colors.BLACK, (0, 100, displayX, 100))
-pygame.draw.rect(window, colors.ORANGE, (0, 0, displayX, 100))
-pygame.draw.rect(window, colors.PURPLE, (0, 0, displayX, 50))
 
 font = pygame.font.Font("fonts/theboldfont.ttf", 34) #Load font object.
 smallerFont = pygame.font.Font("fonts/theboldfont.ttf", 20) #Load font object.
-vacuum_text = font.render("Map Draw Mode", True, colors.WHITE)
-map_text = font.render("Map Draw", True, colors.WHITE)
 
-eraser_big = pygame.image.load("img/eraser.png")
-eraser = pygame.transform.smoothscale(eraser_big, (50, 30))
-eraser_rect = pygame.Rect(250, 5, 50, 40)
-pygame.draw.rect(window, colors.BLACK, eraser_rect, 3)
-window.blit(eraser, eraser_rect)
+def drawingMode():
+    window.fill(colors.BLACK)
+    if os.path.exists('img/PaintImage.png'):
+        img = Image.open("img/PaintImage.png")
+        image = pygame.image.fromstring(img.tobytes(), img.size, img.mode)
+        imageRect = image.get_rect()
+        window.blit(image, (0, 100))
+    global run, draw, color, neverDrew
 
-paintBrush_big = pygame.image.load("img/paintbrush.png")
-paintBrush = pygame.transform.smoothscale(paintBrush_big, (40, 30))
-paintBrush_rect = pygame.Rect(310, 5, 40, 40)
-pygame.draw.rect(window, colors.BLACK, paintBrush_rect, 3)
-window.blit(paintBrush, paintBrush_rect)
+    vacuum_text = font.render("Map Draw Mode", True, colors.WHITE)
+    map_text = font.render("Map Draw", True, colors.WHITE)
+    pygame.draw.rect(window, colors.ORANGE, (0, 0, displayX, 100))
+    pygame.draw.rect(window, colors.PURPLE, (0, 0, displayX, 50))
 
-dirt_big = pygame.image.load("img/dirt.png")
-dirt = pygame.transform.smoothscale(dirt_big, (40, 30))
-dirt_rect = pygame.Rect(360, 5, 40, 40)
-pygame.draw.rect(window, colors.BLACK, dirt_rect, 3)
-window.blit(dirt, dirt_rect)
+    eraser_big = pygame.image.load("img/eraser.png")
+    eraser = pygame.transform.smoothscale(eraser_big, (50, 30))
+    eraser_rect = pygame.Rect(250, 5, 50, 40)
+    pygame.draw.rect(window, colors.BLACK, eraser_rect, 3)
+    window.blit(eraser, eraser_rect)
 
-next_text = smallerFont.render(" Next", True, colors.WHITE)
-next_rect = pygame.Rect(420, 10, 52, 30)
-pygame.draw.rect(window, colors.BLACK, next_rect, 3)
-window.blit(next_text, (420, 15))
+    paintBrush_big = pygame.image.load("img/paintbrush.png")
+    paintBrush = pygame.transform.smoothscale(paintBrush_big, (40, 30))
+    paintBrush_rect = pygame.Rect(310, 5, 40, 40)
+    pygame.draw.rect(window, colors.BLACK, paintBrush_rect, 3)
+    window.blit(paintBrush, paintBrush_rect)
 
-window.blit(vacuum_text, (5, 60))
-#window.blit(map_text, (15, 25))
-savedMode = False
+    dirt_big = pygame.image.load("img/dirt.png")
+    dirt = pygame.transform.smoothscale(dirt_big, (40, 30))
+    dirt_rect = pygame.Rect(360, 5, 40, 40)
+    pygame.draw.rect(window, colors.BLACK, dirt_rect, 3)
+    window.blit(dirt, dirt_rect)
 
-while(run):
-    #pygame.time.delay(100)
-    pygame.display.update()
+    next_text = smallerFont.render(" Next", True, colors.WHITE)
+    next_rect = pygame.Rect(420, 10, 52, 30)
+    pygame.draw.rect(window, colors.BLACK, next_rect, 3)
+    window.blit(next_text, (420, 15))
 
-    if paintBrush_rect.collidepoint(pygame.mouse.get_pos()):
-        color = colors.RED
-    if eraser_rect.collidepoint(pygame.mouse.get_pos()):
-        color = colors.BLACK
-    if dirt_rect.collidepoint(pygame.mouse.get_pos()):
-        color = colors.BROWN
+    window.blit(vacuum_text, (5, 60))
+    # window.blit(map_text, (15, 25))
+    savedMode = False
+    while run:
+        #pygame.time.delay(100)
+        pygame.display.update()
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
-            sys.exit()
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            draw = True
-        if event.type == pygame.MOUSEBUTTONUP:
-            draw = False
+        if paintBrush_rect.collidepoint(pygame.mouse.get_pos()):
+            color = colors.RED
+        if eraser_rect.collidepoint(pygame.mouse.get_pos()):
+            color = colors.BLACK
+        if dirt_rect.collidepoint(pygame.mouse.get_pos()):
+            color = colors.BROWN
 
-    if draw and not savedMode:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                draw = True
+            if event.type == pygame.MOUSEBUTTONUP:
+                draw = False
 
-        pos = pygame.mouse.get_pos()
-        if(pos[1]>105):
-            pygame.draw.circle(window, color, (pos[0], pos[1]), 10)
+        if draw and not savedMode:
 
-        if next_rect.collidepoint(pos):
-            print("Clicked next")
-            save_surface = pygame.Surface((displayX, displayY-100))
-            save_surface.blit(window, (0, 0), (0, 100, 500, 400))
-            pygame.image.save(save_surface, "img/PaintImage.png")
-            savedMode = True
+            pos = pygame.mouse.get_pos()
+            if(pos[1]>105):
+                pygame.draw.circle(window, color, (pos[0], pos[1]), 10)
 
-    if (savedMode):
-        break
-clock.tick(60)
+            if next_rect.collidepoint(pos):
+                print("Clicked next")
+                save_surface = pygame.Surface((displayX, displayY-100))
+                save_surface.blit(window, (0, 0), (0, 100, 500, 400))
+                pygame.image.save(save_surface, "img/PaintImage.png")
+                savedMode = True
+
+        if savedMode:
+            neverDrew = False
+            break
+
+    clock.tick(60)
+
+if neverDrew:
+    drawingMode()
 
 ##### SAVED IMAGE! #####
 
@@ -111,9 +128,14 @@ map_text = font.render("Running Algorithm", True, colors.WHITE)
 window.blit(map_text, (15, 25))
 
 start_text = smallerFont.render(" Start", True, colors.WHITE)
-start_rect = pygame.Rect(420, 50, 62, 25)
+start_rect = pygame.Rect(430, 50, 62, 25)
 pygame.draw.rect(window, colors.BLACK, start_rect, 3)
-window.blit(start_text, (420, 55))
+window.blit(start_text, (430, 55))
+
+back_text = smallerFont.render(" Back", True, colors.WHITE)
+back_rect = pygame.Rect(360, 50, 62, 25)
+pygame.draw.rect(window, colors.BLACK, back_rect, 3)
+window.blit(back_text, (360, 55))
 
 image = pygame.image.fromstring(img.tobytes(), img.size, img.mode)
 imageRect = image.get_rect()
@@ -122,12 +144,50 @@ newWindow.blit(image, (0, 100))
 vacuum_big = pygame.image.load("img/vacuum.png")
 vacuum = pygame.transform.smoothscale(vacuum_big, (50, 30))
 
+def setupAgain():
+    global img, newWindow, map_ext, start_text, map_text, start_rect, back_rect, image_rect, image, back_text, pixels, vacuum, imageRect, vacuum_big
+    window.fill(colors.BLACK)
+    img = Image.open("img/PaintImage.png")
+    pixels = img.load()
+
+    newWindow = pygame.display.set_mode((displayX, displayY))
+    pygame.display.set_caption("Running Algorithm")
+
+    pygame.draw.rect(window, colors.ORANGE, (0, 0, displayX, 100))
+    map_text = font.render("Running Algorithm", True, colors.WHITE)
+    # window.blit(vacuum_text, (5, 5))
+    window.blit(map_text, (15, 25))
+
+    start_text = smallerFont.render(" Start", True, colors.WHITE)
+    start_rect = pygame.Rect(430, 50, 62, 25)
+    pygame.draw.rect(window, colors.BLACK, start_rect, 3)
+    window.blit(start_text, (430, 55))
+
+    back_text = smallerFont.render(" Back", True, colors.WHITE)
+    back_rect = pygame.Rect(360, 50, 62, 25)
+    pygame.draw.rect(window, colors.BLACK, back_rect, 3)
+    window.blit(back_text, (360, 55))
+
+    image = pygame.image.fromstring(img.tobytes(), img.size, img.mode)
+    imageRect = image.get_rect()
+    newWindow.blit(image, (0, 100))
+
+    vacuum_big = pygame.image.load("img/vacuum.png")
+    vacuum = pygame.transform.smoothscale(vacuum_big, (50, 30))
+
 placingVacuumMode = True
 draw = False
 havePlacedVacuum = False
+backToDrawing = False
 start = (0, 0)
 
-while placingVacuumMode :
+while placingVacuumMode:
+
+    if backToDrawing:
+        backToDrawing = False
+        drawingMode()
+        setupAgain()
+
     pygame.display.update()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -147,6 +207,10 @@ while placingVacuumMode :
             else:
                 tkinter.messagebox.showinfo('Warning', 'Please place a vacuum cleaner')
 
+        if back_rect.collidepoint(pos):
+            print("Clicked back")
+            backToDrawing = True
+
         if pos[1]>105:
             newWindow.blit(image, (0, 100))
             newWindow.blit(vacuum, (pos[0]-10, pos[1]-10))
@@ -157,11 +221,7 @@ while placingVacuumMode :
 
 width, height = displayX, displayY-100
 queue = collections.deque([[start]])
-print(start)
 bfsRunSpeed = 500
-cleaningMode = False
-clean = 0
-notClean = 0
 
 while run:
 
