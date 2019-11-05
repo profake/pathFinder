@@ -26,6 +26,10 @@ draw = False
 neverDrew = True
 dustCount = 0
 dustClean = 0
+placingVacuumMode = True
+havePlacedVacuum = False
+backToDrawing = False
+start = (0, 0)
 
 #pygame.draw.rect(window, colors.BLACK, (0, 100, displayX, 100))
 
@@ -152,6 +156,7 @@ newWindow.blit(image, (0, 100))
 vacuum_big = pygame.image.load("img/vacuum.png")
 vacuum = pygame.transform.smoothscale(vacuum_big, (30, 30))
 
+
 def setupAgain():
     global img, newWindow, map_ext, start_text, map_text, start_rect, back_rect, image_rect, image, back_text, pixels, vacuum, imageRect, vacuum_big, havePlacedVacuum, placingVacuumMode
     window.fill(colors.BLACK)
@@ -186,27 +191,22 @@ def setupAgain():
     vacuum_big = pygame.image.load("img/vacuum.png")
     vacuum = pygame.transform.smoothscale(vacuum_big, (30, 30))
 
-placingVacuumMode = True
-draw = False
-havePlacedVacuum = False
-backToDrawing = False
-start = (0, 0)
-
 def placeVacuum():
-    global backToDrawing, havePlacedVacuum, placingVacuumMode, run
+
+    global backToDrawing, havePlacedVacuum, placingVacuumMode, start, draw
     if backToDrawing:
         backToDrawing = False
         drawingMode()
         setupAgain()
 
     pygame.display.update()
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
+
+    for ev in pygame.event.get():
+        if ev.type == pygame.QUIT:
             sys.exit()
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        if ev.type == pygame.MOUSEBUTTONDOWN:
             draw = True
-        if event.type == pygame.MOUSEBUTTONUP:
+        if ev.type == pygame.MOUSEBUTTONUP:
             draw = False
 
     if draw:
@@ -229,82 +229,69 @@ def placeVacuum():
             havePlacedVacuum = True
 
     clock.tick(60)
-
-while placingVacuumMode:
-
-    pygame.display.update()
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
-            sys.exit()
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            draw = True
-        if event.type == pygame.MOUSEBUTTONUP:
-            draw = False
-
-    if draw:
-        pos = pygame.mouse.get_pos()
-        if start_rect.collidepoint(pos):
-            print("Clicked start")
-            if havePlacedVacuum:
-                placingVacuumMode = False
-            else:
-                tkinter.messagebox.showinfo('Warning', 'Please place a vacuum cleaner')
-
-        if back_rect.collidepoint(pos):
-            print("Clicked back")
-            backToDrawing = True
-
-
-        if pos[1]>105:
-            newWindow.blit(image, (0, 100))
-            newWindow.blit(vacuum, (pos[0]-10, pos[1]-10))
-            start = pos[0], pos[1]-105
-            havePlacedVacuum = True
-
-    if backToDrawing:
-        backToDrawing = False
-        drawingMode()
-        setupAgain()
+    if placingVacuumMode:
         placeVacuum()
 
-    clock.tick(60)
-
 width, height = displayX, displayY-100
-queue = collections.deque([[start]])
 bfsRunSpeed = 500
+dustCleanSpeed = 100
 report = False
+queue = collections.deque([[start]])
+queueDust = collections.deque()
+bfsMode = "normal"
 
-while run:
+def runBFS(mode):
+    global image, path, speed, dustClean, pixels, draw, backToDrawing, report, percentageCleaned, pos, start, queue
+
+    if start == (0, 0):
+        placeVacuum()
+        queue = collections.deque([[start]])
 
     image = pygame.image.fromstring(img.tobytes(), img.size, img.mode)
     newWindow.blit(image, (0, 100))
 
     # BFS
-    if len(queue) > 0:
-        speed = 0
-        while(speed < bfsRunSpeed and queue):
-            speed += 1
-            path = queue.popleft()
-            x, y = path[-1]
+    if mode == "normal":
+        if len(queue) > 0:
+            speed = 0
+            while speed < bfsRunSpeed and queue:
+                speed += 1
+                path = queue.popleft()
+                x, y = path[-1]
 
-            #for x2, y2 in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
-            for x2, y2 in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1), (x+1, y+1), (x-1, y-1), (x+1, y-1), (x-1, y+1)):
-                if 0 <= x2 < width and 0 <= y2 < height and (x2, y2):
+                for x2, y2 in (
+                (x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1), (x + 1, y + 1), (x - 1, y - 1), (x + 1, y - 1),
+                (x - 1, y + 1)):
+                    if 0 <= x2 < width and 0 <= y2 < height and (x2, y2):
 
-                    if pixels[x2, y2] == colors.BLACK:
-                        queue.append(path + [(x2, y2)])
+                        if pixels[x2, y2] == colors.BLACK:
+                            queue.append(path + [(x2, y2)])
+                            pixels[x2, y2] = colors.GREY
+
+                        elif pixels[x2, y2] == colors.BROWN:
+                            queueDust.append(path + [(x2, y2)])
+                            runBFS("clean")
+    if mode == "clean":
+        if len(queueDust) > 0:
+            speed = 0
+            while speed < dustCleanSpeed and queueDust:
+                speed += 1
+                path = queueDust.popleft()
+                x, y = path[-1]
+
+                for x2, y2 in (
+                (x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1), (x + 1, y + 1), (x - 1, y - 1), (x + 1, y - 1),
+                (x - 1, y + 1)):
+                    if 0 <= x2 < width and 0 <= y2 < height and (x2, y2) and pixels[x2, y2] == colors.BROWN:
+
+                        dustClean += 1
+                        queueDust.append(path + [(x2, y2)])
                         pixels[x2, y2] = colors.GREY
-
-                    elif pixels[x2, y2] == colors.BROWN:
-                        dustClean+=1
-                        queue.append(path + [(x2, y2)])
-                        pixels[x2, y2] = colors.GREY
-                        newWindow.blit(vacuum, (x2 - 10, y2 + 75))
+        else:
+            mode = "normal"
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            run = False
             sys.exit()
         if event.type == pygame.MOUSEBUTTONDOWN:
             draw = True
@@ -323,14 +310,15 @@ while run:
         setupAgain()
         placeVacuum()
 
-    if len(queue) == 0 and not report:
+    if len(queue) == 0 and len(queueDust) == 0 and not report:
         report = True
-        percentageCleaned = round(dustClean/(dustCount/100), 3)
-        tkinter.messagebox.showinfo('Success', 'Cleaned '+ str(dustClean) +" out of "+ str(dustCount) +" dirt ("+str(percentageCleaned)+")%")
+        percentageCleaned = round(dustClean / (dustCount / 100), 3)
+        tkinter.messagebox.showinfo('Success',
+                                    'Cleaned ' + str(dustClean) + " out of " + str(dustCount) + " dirt (" + str(
+                                        percentageCleaned) + ")%")
 
     pygame.display.update()
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
-            sys.exit()
     clock.tick(60)
+    runBFS(mode)
+
+runBFS("normal")
