@@ -233,7 +233,7 @@ def placeVacuum():
         placeVacuum()
 
 width, height = displayX, displayY-100
-bfsRunSpeed = 500
+bfsRunSpeed = 1500
 dustCleanSpeed = 100
 report = False
 queue = collections.deque([[start]])
@@ -241,7 +241,8 @@ queueDust = collections.deque()
 bfsMode = "normal"
 
 def runBFS(mode):
-    global image, path, speed, dustClean, pixels, draw, backToDrawing, report, percentageCleaned, pos, start, queue
+    global image, path, speed, dustClean, pixels, draw, backToDrawing, report, percentageCleaned, pos, start, queue, bfsRunSpeed
+
 
     if start == (0, 0):
         placeVacuum()
@@ -250,18 +251,16 @@ def runBFS(mode):
     image = pygame.image.fromstring(img.tobytes(), img.size, img.mode)
     newWindow.blit(image, (0, 100))
 
-    # BFS
+    # DFS
     if mode == "normal":
         if len(queue) > 0:
             speed = 0
             while speed < bfsRunSpeed and queue:
                 speed += 1
-                path = queue.popleft()
+                path = queue.pop()  # popleft for bfs, pop for dfs
                 x, y = path[-1]
 
-                for x2, y2 in (
-                (x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1), (x + 1, y + 1), (x - 1, y - 1), (x + 1, y - 1),
-                (x - 1, y + 1)):
+                for x2, y2 in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1), (x + 1, y + 1), (x - 1, y - 1), (x + 1, y - 1), (x - 1, y + 1)):
                     if 0 <= x2 < width and 0 <= y2 < height and (x2, y2):
 
                         if pixels[x2, y2] == colors.BLACK:
@@ -271,6 +270,7 @@ def runBFS(mode):
                         elif pixels[x2, y2] == colors.BROWN:
                             queueDust.append(path + [(x2, y2)])
                             runBFS("clean")
+
     if mode == "clean":
         if len(queueDust) > 0:
             speed = 0
