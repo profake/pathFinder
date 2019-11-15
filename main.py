@@ -192,45 +192,43 @@ def setupAgain():
     vacuum = pygame.transform.smoothscale(vacuum_big, (30, 30))
 
 def placeVacuum():
-
     global backToDrawing, havePlacedVacuum, placingVacuumMode, start, draw
-    if backToDrawing:
-        backToDrawing = False
-        drawingMode()
-        setupAgain()
+    while placingVacuumMode:
+        if backToDrawing:
+            backToDrawing = False
+            drawingMode()
+            setupAgain()
 
-    pygame.display.update()
+        pygame.display.update()
 
-    for ev in pygame.event.get():
-        if ev.type == pygame.QUIT:
-            sys.exit()
-        if ev.type == pygame.MOUSEBUTTONDOWN:
-            draw = True
-        if ev.type == pygame.MOUSEBUTTONUP:
-            draw = False
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
+                sys.exit()
+            if ev.type == pygame.MOUSEBUTTONDOWN:
+                draw = True
+            if ev.type == pygame.MOUSEBUTTONUP:
+                draw = False
 
-    if draw:
-        pos = pygame.mouse.get_pos()
-        if start_rect.collidepoint(pos):
-            print("Clicked start")
-            if havePlacedVacuum:
-                placingVacuumMode = False
-            else:
-                tkinter.messagebox.showinfo('Warning', 'Please place a vacuum cleaner')
+        if draw:
+            pos = pygame.mouse.get_pos()
+            if start_rect.collidepoint(pos):
+                print("Clicked start")
+                if havePlacedVacuum:
+                    placingVacuumMode = False
+                else:
+                    tkinter.messagebox.showinfo('Warning', 'Please place a vacuum cleaner')
 
-        if back_rect.collidepoint(pos):
-            print("Clicked back")
-            backToDrawing = True
+            if back_rect.collidepoint(pos):
+                print("Clicked back")
+                backToDrawing = True
 
-        if pos[1]>105:
-            newWindow.blit(image, (0, 100))
-            newWindow.blit(vacuum, (pos[0]-10, pos[1]-10))
-            start = pos[0], pos[1]-105
-            havePlacedVacuum = True
+            if pos[1]>105:
+                newWindow.blit(image, (0, 100))
+                newWindow.blit(vacuum, (pos[0]-10, pos[1]-10))
+                start = pos[0], pos[1]-105
+                havePlacedVacuum = True
 
-    clock.tick(60)
-    if placingVacuumMode:
-        placeVacuum()
+        clock.tick(60)
 
 width, height = displayX, displayY-100
 bfsRunSpeed = 1500
