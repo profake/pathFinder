@@ -1,7 +1,7 @@
 # AI Project: pathFinder
 [![Video](https://img.youtube.com/vi/ks3G9B3yI0c/0.jpg)](https://www.youtube.com/watch?v=ks3G9B3yI0c)
 <br>
-This is a very short project I did for our Artificial Intelligence lab course in November. <br>
+This is a very short project I did for our Artificial Intelligence lab course in November 2019. <br>
 It was made with Python 3, PyGame for the GUI and interaction, and PIL for converting the map to an array. The code is mostly my own (Everyone uses Stackoverflow a little :p) <br>
 <br>
 <br>
